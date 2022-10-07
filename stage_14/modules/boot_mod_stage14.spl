@@ -1,0 +1,181 @@
+//Loading the init program,interrupt handler and exception handler routine;
+
+//SCHEDULER MODULE
+loadi(50,63);
+loadi(51,64);
+
+
+//LIBRARY CODE
+loadi(63,13);
+loadi(64,14);
+
+
+//INIT Program
+loadi(65,7);
+loadi(66,8);
+
+
+
+//EXEC Program:76-127:Reserved for user programs
+loadi(83,69);
+
+
+//HARDWARE INTERRUPTS:Exit Interrupt handler:INT_10
+loadi(22,35);
+loadi(23,36);
+
+
+
+//Timer Interrupt Handler:INT_1
+loadi(4,17);
+loadi(5,18);
+
+
+//Software Interrupts
+//WRITE SYSTEM CALL:Software Interrupt
+loadi(16,29);
+loadi(17,30);
+
+
+//Exception Handler:
+loadi(2,15);
+loadi(3,16);
+
+
+//Page Table of INIT PROCESS:INIT PROCESS
+
+PTBR=PAGE_TABLE_BASE+20;
+PTLR=10;
+
+//Page(0,1):Library code
+//Page(2,3):Heap Segment
+//Page(4,5):Code Segment
+//Page(8,9):Stack Segment
+
+//LIBRARY CODE
+
+[PTBR+0]=63;
+[PTBR+1]="0100";
+
+[PTBR+2]=64;
+[PTBR+3]="0100";
+
+//HEAP SEGMENT 
+
+[PTBR+4]=78;
+[PTBR+5]="0110";
+
+[PTBR+6]=79;
+[PTBR+7]="0110";
+
+//Code Segment
+
+[PTBR+8]=65;
+[PTBR+9]="0100";
+
+[PTBR+10]=66;
+[PTBR+11]="0100";
+
+[PTBR+12]=-1;
+[PTBR+13]="0000";
+
+[PTBR+14]=-1;
+[PTBR+15]="0000";
+
+//Stack Segment
+[PTBR+16]=76;
+[PTBR+17]="0110";
+
+[PTBR+18]=77;
+[PTBR+19]="0110";
+
+//Process Table of init
+alias pos R0;
+pos=PROCESS_TABLE + (1*16);
+
+[pos + 1]=1; 			//PID
+[pos + 4]=CREATED; 		//State
+[pos + 11]=80; 			//User Area Page No
+[pos + 12]=0;			//KPTR
+[pos + 13]=8*512;		//UPTR	
+[pos + 14]=PAGE_TABLE_BASE+20; 	//PTBR
+[pos + 15]=10; 			//PTLR
+
+//Top of user stack of init process
+[76*512]=[(65*512)+1]; //Entry Point
+////////////////////////////////////////
+//Exec Process:
+
+PTBR=PAGE_TABLE_BASE+40;
+PTLR=10;
+
+//Page(0,1):Library code
+//Page(2,3):Heap Segment
+//Page(4,5):Code Segment
+//Page(8,9):Stack Segment
+
+//LIBRARY CODE
+
+[PTBR+0]=63;
+[PTBR+1]="0100";
+
+[PTBR+2]=64;
+[PTBR+3]="0100";
+
+//HEAP SEGMENT 
+
+[PTBR+4]=-1;
+[PTBR+5]="0110";
+
+[PTBR+6]=-1;
+[PTBR+7]="0110";
+
+//Code Segment
+
+[PTBR+8]=83;
+[PTBR+9]="0100";
+
+[PTBR+10]=-1;
+[PTBR+11]="0100";
+
+[PTBR+12]=-1;
+[PTBR+13]="0000";
+
+[PTBR+14]=-1;
+[PTBR+15]="0000";
+
+//Stack Segment
+[PTBR+16]=84;
+[PTBR+17]="0110";
+
+[PTBR+18]=85;
+[PTBR+19]="0110";
+
+//Process Table of init
+pos=PROCESS_TABLE + (2*16);
+
+[pos + 1]=2; 			//PID
+[pos + 4]=CREATED; 		//State
+[pos + 11]=86; 			//User Area Page No
+[pos + 12]=0;			//KPTR
+[pos + 13]=8*512;		//UPTR	
+[pos + 14]=PAGE_TABLE_BASE+40; 	//PTBR
+[pos + 15]=10; 			//PTLR
+
+//Top of user stack of init process
+[84*512]=[(83*512)+1]; //Entry Point
+
+////////////////////////////////////////
+
+breakpoint;
+alias process R1;
+process=3;
+
+while(process<16)
+do
+[PROCESS_TABLE + (process*16)+4]=TERMINATED;	
+process=process+1;
+endwhile;
+
+breakpoint;
+return;
