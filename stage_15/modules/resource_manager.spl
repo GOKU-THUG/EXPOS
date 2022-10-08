@@ -1,0 +1,45 @@
+alias function_num R1;
+alias pid R2;
+
+
+if(function_num==8)						//Acquire Terminal
+then
+while([TERMINAL_STATUS_TABLE]==1)
+do
+
+[PROCESS_TABLE + (pid*16) + 4]=WAIT_TERMINAL;
+
+multipush(R1,R2);
+call MOD_5;
+
+multipop(R1,R2);
+endwhile;
+
+[TERMINAL_STATUS_TABLE]=1;
+[TERMINAL_STATUS_TABLE+1]=pid;
+
+breakpoint;
+return;
+
+
+
+
+else 				//Release Terminal
+
+if(pid==[TERMINAL_STATUS_TABLE+1])			//if the current pid is not equal to the one in the terminal status table then it means the current pid is releasing the terminal without acquiring it.
+then
+[PROCESS_TABLE + (pid*16) + 4]=READY;
+[TERMINAL_STATUS_TABLE]=0;
+R0=0;
+
+breakpoint;
+return;
+
+else
+R0=-1;
+return;
+endif;
+
+
+
+endif;

@@ -1,0 +1,66 @@
+//Mode bit is used  so that if there are when a sys call is called on a process,if the process is already engaged in another sys call process ,then it can be identified by checking the mode bit and check if it is engaged.If it is not engaged then that sys call can be used else that sys call will not work as the process is involved in another sys call;
+
+[PROCESS_TABLE+ ([SYSTEM_STATUS_TABLE+1]*16) + 9]=5; 			//SETTING THE MODE FLAG BIT TO THE SYSTEM CALL NUMBER
+
+alias USERSP R0;
+alias descriptor_phys_pg_no R1;
+alias descriptor_phy_address R2;
+alias descriptor_val R3;
+alias return_addr R5;
+
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 13]=SP;
+USERSP=SP;
+
+//Extracting the argument 1 and 2 from the user stack using address translation;
+//NOTE:No need to extract the system call no in this case as we only need to print the output to the terminal and not access any interrupt service routine
+
+descriptor_phys_pg_no=[PTBR+2*((USERSP-4)/512)]; 			//Physical page no corresponding to argument 1
+descriptor_phy_address=(descriptor_phys_pg_no*512)+((USERSP-4)%512);
+descriptor_val=[descriptor_phy_address];
+
+if(descriptor_val!=-2) 
+
+then 									//Non valid file descriptor case:
+
+return_addr=[PTBR+2*((USERSP-1)/512)]*512+((USERSP-1)%512);
+[return_addr]=-1;							//-1:indicates failure
+
+else
+
+alias write_val R6;
+write_val=[ ([PTBR+2*((USERSP-3)/512)]*512) + ((USERSP-3)%512) ];			//Argument 2 using address translation:
+
+	
+	
+multipush(R0,R1,R2,R3,R5,R6);								//PUSHING THE REGISTER VALUES BEFORE CALLING DEVICE MANAGER
+
+R1=3;										//TERMINAL WRITE FUNCTION NUMBER
+R2=[SYSTEM_STATUS_TABLE+1];								//CURRENT PID
+R3=write_val;									//VALUE TO WRITE
+
+call MOD_4;										//CALLING DEVICE MANAGER
+
+multipop(R0,R1,R2,R3,R5,R6);
+
+
+
+return_addr=([PTBR+2*((USERSP-1)/512)]*512) + ((USERSP-1)%512);
+
+[return_addr]=0; 							//0:indicates success:return the value;
+
+SP=[PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 13]; 								//Pointing back to the user stack
+
+
+[PROCESS_TABLE+([SYSTEM_STATUS_TABLE+1]*16) + 9]=0;			//SETTING THE MODE FLAG BIT BACK TO 0
+
+
+endif;
+
+ireturn;
+
+
+
+
+
+
+

@@ -1,0 +1,33 @@
+alias function_num R1;
+alias pid R2;
+
+if (function_num==3)
+then
+
+multipush(R1,R2,R3);
+
+R1=8;						//To store the function number for acquiring terminal
+R2=[SYSTEM_STATUS_TABLE+1];			//To store the current pid
+
+call MOD_0;					//Resource manager:Acquire terminal
+
+multipop(R1,R2,R3);
+
+print R3;					//To print the value to be printed
+
+
+multipush(R1,R2,R3);
+
+R1=9;						//To store the function number for acquiring terminal
+R2=[SYSTEM_STATUS_TABLE+1];			//To store the current pid
+
+call MOD_0;					//Resource manager:Release terminal
+
+alias return_value R4;				//To get the return value returned by the release terminal function;
+R4=R0;
+
+multipop(R1,R2,R3);
+
+endif;
+
+return;
