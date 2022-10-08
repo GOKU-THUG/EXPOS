@@ -1,0 +1,11 @@
+load --idle /home/goku/os_lab/stage_14/user_progs/idle_code_stage12_assg1.xsm
+load --init /home/goku/os_lab/stage_14/user_progs/stage_11_assg1.xsm
+load --exec /home/goku/os_lab/stage_14/user_progs/exec14.xsm
+load --module 7 /home/goku/os_lab/stage_14/modules/boot_mod_stage14.xsm
+load --module 5 /home/goku/os_lab/stage_14/modules/scheduler.xsm
+load --int=10 /home/goku/os_lab/stage_14/software_interrupts/int_10.xsm
+load --int=7 /home/goku/os_lab/stage_14/software_interrupts/write_call_stage_10.xsm
+load --int=timer /home/goku/os_lab/stage_14/hardware_interrupts/timer_interrupt_stage_14.xsm
+load --exhandler /home/goku/os_lab/stage_14/exception/exc_int.xsm
+load --os /home/goku/os_lab/stage_14/os_startup/os_code_stage_13.xsm
+load --library /home/goku/myexpos/expl/library.lib
