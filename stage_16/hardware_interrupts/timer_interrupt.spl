@@ -1,0 +1,15 @@
+[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 13]=SP;											//UPTR=SP
+SP=(([PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 11]*512)-1); 		//Pointing to the kernel stack
+
+backup;
+
+[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 4]=READY;				//STATE:ie:Bringing the state back to ready so that in the next round this process can be executed again
+
+call MOD_5;								//SCHEDULER MODULE
+
+restore;
+
+SP=[PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 13];								           //SP=UPTR:To execute from where we stopped in the prev execution of the current process
+
+ireturn;
+
