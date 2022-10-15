@@ -1,0 +1,40 @@
+decl 
+	int printodd();
+enddecl
+
+int printodd()
+{
+	decl 
+	
+		int a,temp;
+	
+	enddecl
+	
+	begin
+	
+	a=1;
+	while(a<=100)
+	do
+		temp=exposcall("Write",-2,a);
+		a=a+2;
+	endwhile;
+	
+	return 0;
+	
+	end
+}
+
+int main()
+{	
+	decl
+		int temp;
+		str msg;
+	enddecl
+	
+	begin
+		msg="SHELL PROGRAM Loaded";
+		temp=exposcall("Write",-2,msg);
+		temp=printodd();
+		return 0;
+	end
+}

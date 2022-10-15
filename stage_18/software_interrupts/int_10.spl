@@ -1,0 +1,29 @@
+alias current_pid R0;
+alias next_pid R1;
+current_pid=[SYSTEM_STATUS_TABLE+1];
+
+
+[PROCESS_TABLE + (current_pid*16) + 4]=TERMINATED;				//STATE:ie:Bringing the state 
+
+next_pid=1;
+
+while(next_pid<16)
+do
+if([PROCESS_TABLE + (next_pid*16) + 4] == READY || [PROCESS_TABLE + (next_pid*16) + 4] == CREATED)
+then
+	break;
+endif;
+
+next_pid=(next_pid+1);
+
+endwhile;
+
+if(next_pid==16)
+then
+halt;
+
+else
+call MOD_5;
+
+endif;
+

@@ -1,0 +1,82 @@
+breakpoint;
+alias function_num R1;
+alias pid R2;
+
+if (function_num==3)                //Exit Function
+then
+	
+	multipush(R1,R2,R3);
+		R1=4;                       //Calling free page table function
+		R2=pid;
+		call MOD_1;                 //Process Manager module
+
+		
+		R1=2;                       //Calling free user area page function
+		R2=pid;
+		call MOD_1;                 //Process Manager module
+
+	multipop(R1,R2,R3);
+
+	[PROCESS_TABLE + (pid*16) + 4]=TERMINATED;		//Setting the state of the process to terminated.
+
+	return;
+endif;
+
+
+if(function_num==2)                  //Free User Page
+then
+
+	multipush(R1,R2,R3);
+		R1=2;                       //Calling release page function
+		R2=[PROCESS_TABLE + pid*16 + 11];	//as pid is not needed in release page function.
+		call MOD_2;                 //Memory manager module
+	multipop(R1,R2,R3);
+	
+	return;
+endif;
+
+
+
+
+if(function_num==4)					//Free Page TABLE
+then
+	
+	multipush(R1,R2,R3);
+	alias i R4;
+
+    //Invalidating the library pages separately as we do not call release page function on the library.
+    [PTBR+0]=-1;
+    [PTBR+1]="0000";
+
+    [PTBR+2]=-1;
+    [PTBR+3]="0000";
+		
+	i=4;
+	R5=PTLR;
+	
+	while(i<20)
+	do
+		if([PTBR+i]!=-1)
+		then
+			multipush(R1,R2,R3,R4,R5);
+			R1=2;				//RELEASE PAGE FUNCTION
+			R2=[PTBR+i];
+			call MOD_2;			//MEMORY MANAGER MODULE
+			
+			[PTBR+i]=-1;	
+			[PTBR+ (i+1)]="0000";
+			
+			multipop(R1,R2,R3,R4,R5);
+		endif;
+		
+				
+		i=i+2;
+	endwhile;
+	
+	multipop(R1,R2,R3);
+
+	return;
+endif;
+
+
+
