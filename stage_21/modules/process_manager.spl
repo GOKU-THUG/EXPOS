@@ -1,0 +1,171 @@
+breakpoint;
+alias function_num R1;
+alias pid R2;
+
+if(function_num==1)				//GET_PCB_ENTRY
+then
+	alias i R5;
+	i=0;
+	
+	while(i<16)
+	do
+		if([PROCESS_TABLE + i*16 + 4]==TERMINATED)
+		then
+			
+			[PROCESS_TABLE + i*16 + 1]=i;
+			[PROCESS_TABLE + i*16 + 4]=ALLOCATED;
+			[PROCESS_TABLE + i*16 + 14]=PAGE_TABLE_BASE+20*i;
+			[PROCESS_TABLE + i*16 + 15]=10;
+			
+			R0=i;
+			break;
+		endif;
+		i=i+1;
+	endwhile;
+	
+	
+	if(i==16)
+	then
+		R0=-1;				//As no process is free it will return -1;
+	endif;
+	
+	return;
+endif;
+
+
+
+if(function_num==2)                  //Free User AREA Page
+then
+
+	multipush(R1,R2,R3);
+		R1=2;                       //Calling release page function
+		R2=[PROCESS_TABLE + pid*16 + 11];	//as pid is not needed in release page function.
+		call MOD_2;                 //Memory manager module
+	multipop(R1,R2,R3);
+	
+	return;
+endif;
+
+
+
+
+if (function_num==3)                //Exit Function
+then
+	breakpoint;
+	multipush(R1,R2,R3);
+		R1=4;                       //Calling free page table function
+		R2=pid;
+		call MOD_1;                 //Process Manager module
+	breakpoint;	
+		R1=2;                       //Calling free user area page function
+		R2=pid;
+		call MOD_1;                 //Process Manager module
+
+	multipop(R1,R2,R3);
+
+	//INVALIDATING THE PER PROCESS RESOURCE TABLE of the process
+	alias offset R13;
+	alias base_addr R14;
+	
+	base_addr=[PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 11]*512;
+	offset=496;
+	
+	while(offset<=511)				//Initializing the perprocess resource table as last 16 words of the user stack are occupied by the per process resource table;
+	do
+		[base_addr+offset]=-1;				
+		offset=offset+1;
+	endwhile;
+	
+	[PROCESS_TABLE + (pid*16) + 4]=TERMINATED;		//Setting the state of the process to terminated.
+
+	
+	if([PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 9]!=9)
+	then
+		alias i R3;
+		i=0;
+		
+		while(i<16)
+		do
+			if([PROCESS_TABLE + i*16 + 4]==WAIT_PROCESS && [PROCESS_TABLE + i*16 + 5]==[SYSTEM_STATUS_TABLE+1])
+			then
+			     [PROCESS_TABLE + i*16 + 4]=READY;
+			endif;
+		
+			if([PROCESS_TABLE + i*16 + 2]==[SYSTEM_STATUS_TABLE+1])
+			then
+				[PROCESS_TABLE + i*16 + 2]=-1;
+			endif;
+			
+			i=i+1;
+		endwhile;
+	endif;
+	return;
+endif;
+
+
+
+
+
+
+if(function_num==4)					//Free Page TABLE
+then
+	
+	multipush(R1,R2,R3);
+	alias i R4;
+
+       //Invalidating the library pages separately as we do not call release page function on the library.
+       [PTBR+0]=-1;
+       [PTBR+1]="0000";
+
+       [PTBR+2]=-1;
+       [PTBR+3]="0000";
+		
+	i=4;
+	R5=PTLR;
+	
+	while(i<20)
+	do
+		if([PTBR+i]!=-1)
+		then
+			multipush(R1,R2,R3,R4,R5);
+			R1=RELEASE_PAGE;				//RELEASE PAGE FUNCTION
+			R2=[PTBR+i];
+			call MOD_2;			//MEMORY MANAGER MODULE
+			
+			[PTBR+i]=-1;	
+			[PTBR+(i+1)]="0000";
+			
+			multipop(R1,R2,R3,R4,R5);
+		endif;
+		
+				
+		i=i+2;
+	endwhile;
+	
+	i=0;
+	
+	//RELEASING DISK BLOCKS OF HEAP AND STACK BY VERIFYING THE DISK_STATUS_TABLE
+	while(i<10)
+	do
+		if((i==2 || i==3 || i==8 || i==9) && ([DISK_STATUS_TABLE + pid*10 + i]!=-1))		//If heap or stack entries of that process are there in the disk,then we need to release them.
+		then
+			multipush(R1,R2,R3,R4,R5);
+				R1=RELEASE_BLOCK;							//Release block
+				R2=[DISK_STATUS_TABLE + pid*10 + i];					//Block to release
+				call MOD_2;								//Memory Manager
+			multipop(R1,R2,R3,R4,R5);
+		endif;
+		
+		[DISK_STATUS_TABLE + pid*10 + i]=-1;
+		
+		i=i+1;
+	endwhile;
+	
+	
+	multipop(R1,R2,R3);
+
+	return;
+endif;
+
+
+

@@ -1,0 +1,70 @@
+alias function_num R1;
+alias pid R2;
+
+
+if(function_num==ACQUIRE_TERMINAL)						//Acquire Terminal
+then
+	while([TERMINAL_STATUS_TABLE]==1)
+	do
+		[PROCESS_TABLE + (pid*16) + 4]=WAIT_TERMINAL;
+
+		multipush(R1,R2);
+		call MOD_5;
+
+		multipop(R1,R2);
+	endwhile;
+
+	[TERMINAL_STATUS_TABLE]=1;
+	[TERMINAL_STATUS_TABLE+1]=pid;
+
+	breakpoint;
+	return;
+endif;
+
+
+
+if(function_num==RELEASE_TERMINAL)				//Release Terminal
+then
+	if(pid==[TERMINAL_STATUS_TABLE+1])		//if the current pid is not equal to the one in the terminal status table then it means the current pid is releasing the terminal without acquiring it.
+	then
+		[TERMINAL_STATUS_TABLE]=0;
+
+		alias pids R5;
+		pids=0;
+		while(pids<16)
+		do
+			if([PROCESS_TABLE + (pids*16) + 4]==WAIT_TERMINAL)
+			then
+			[PROCESS_TABLE + (pids*16) + 4]=READY;
+			endif;
+			pids=pids+1;
+		endwhile;
+
+
+		R0=0;
+
+		breakpoint;
+		return;
+	
+	else
+		R0=-1;
+		return;
+	endif;
+endif;
+
+if(function_num==ACQUIRE_DISK)
+then
+	breakpoint;
+	while([DISK_STATUS_TABLE]==1)
+	do
+		[PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 4]=WAIT_DISK;
+		
+		multipush(R1,R2);
+		call MOD_5;			//SCHEDULER MODULE
+		multipop(R1,R2);
+	endwhile;
+	
+	[DISK_STATUS_TABLE]=1;						//Setting the status of  disk status table to 1 
+	[DISK_STATUS_TABLE+4]=pid;					//Setting the pid of disk status table to pid;
+	return;
+endif;
