@@ -1,0 +1,64 @@
+breakpoint;
+alias userSP R0;
+alias return_address R5;
+
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 13]=SP;
+userSP=SP;
+
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 9]=15;				//Mode Bit=15;
+SP=[PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 11]*512-1;			//SP=User Area Page
+
+return_address=[PTBR+2*((userSP-1)/512)]*512 + (userSP-1)%512;
+
+if([SYSTEM_STATUS_TABLE+1]!=1 || [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 3]!=1)		//If the process calling shutdown is not root user.
+then	
+	[return_address]=-1;
+	[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 9]=15;				//Mode Bit=15;
+	SP=[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 13];
+	ireturn;
+endif;
+
+//Copying Inode table
+
+multipush(R0,R5);
+R1=DISK_STORE;
+R2=[SYSTEM_STATUS_TABLE + 1];
+R8=59;
+R9=3;
+call MOD_4;									//Device Manager
+multipop(R0,R5);
+
+
+//Copying user table
+
+multipush(R0,R5);
+R1=DISK_STORE;
+R2=[SYSTEM_STATUS_TABLE + 1];
+R8=60;
+R9=4;
+call MOD_4;									//Device Manager
+multipop(R0,R5);
+
+
+//Copying Root File
+
+multipush(R0,R5);
+R1=DISK_STORE;
+R2=[SYSTEM_STATUS_TABLE + 1];
+R8=62;
+R9=5;
+call MOD_4;									//Device Manager
+multipop(R0,R5);
+
+
+//Copying Disk Free List
+
+multipush(R0,R5);
+R1=DISK_STORE;
+R2=[SYSTEM_STATUS_TABLE + 1];
+R8=61;
+R9=2;
+call MOD_4;									//Device Manager
+multipop(R0,R5);
+
+halt;
