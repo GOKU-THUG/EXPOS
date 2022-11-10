@@ -1,15 +1,52 @@
+decl
+	int checkprime(int a);
+enddecl
+
+int  checkprime(int a)
+{
+	decl
+		int i,result;
+	enddecl
+	
+	begin
+	
+		i=1;
+		result=1;
+		
+		while(i<a)
+		do
+			if((a%i)==0)
+			then
+				result=0;
+				break;
+			endif;
+			
+			i=i+1;
+		endwhile;
+		
+		return result;
+	end
+}
+
 int main()
 {
 	decl
-		int a,tmp;
+		int a,tmp,flag;
 	enddecl
 	begin
-		a=101;
-		while(a<=200) do
-			breakpoint;
-			tmp=exposcall("Write",-2,a);
+		a=2;
+		while(a<=100) 
+		do
+			flag=checkprime(a);
+			
+			if(flag==1)
+			then
+				tmp=exposcall("Write",-2,a);	
+			endif;
+
 			a=a+1;
 		endwhile;
+		
 		return 0;
 	end
 }

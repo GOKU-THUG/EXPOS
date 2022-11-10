@@ -16,7 +16,10 @@ int main()
 			a = 0;
 			while(a != -2) do
 				a = exposcall("Read",fileDesc,data);
-				temp = exposcall("Write",-2,data);
+				if(a!=-2)
+				then
+					temp = exposcall("Write",-2,data);
+				endif;
 			endwhile;
 			
 			temp = exposcall("Close",fileDesc);

@@ -70,8 +70,8 @@ then 													//Non valid file descriptor case:
 		
 	multipush(R0,R1,R2,R3,R5,R6,R7,R8,R9,R12,R13);							//To lock the inode so that no other process now uses this file and the file can be deleted safely.
 		R1=ACQUIRE_INODE;
-		R2=[SYSTEM_STATUS_TABLE+1];
-		R3=inode_index;
+        R2=inode_index;
+		R3=[SYSTEM_STATUS_TABLE+1];
 		call MOD_0;	
 		
 		R10=R0;											//Resource Manager
@@ -91,8 +91,8 @@ then 													//Non valid file descriptor case:
 	then
 		multipush(R0,R1,R2,R3,R5,R6,R7,R8,R9,R12,R13);						//To unlock the inode as that file is already opened by another process and cannot be deleted.
 			R1=RELEASE_INODE;								//Release Inode
-			R2=[SYSTEM_STATUS_TABLE+1];
-			R3=inode_index;
+			R2=inode_index;
+            R3=[SYSTEM_STATUS_TABLE+1];
 			call MOD_0;									//Resource Manager
 		multipop(R0,R1,R2,R3,R5,R6,R7,R8,R9,R12,R13);
 		
@@ -106,7 +106,6 @@ then 													//Non valid file descriptor case:
 	then
 		multipush(R0,R1,R2,R3,R5,R6,R7,R8,R9,R12,R13);
 			R1=GET_FREE_BLOCK;								//GET FREE BLOCK
-			R2=[SYSTEM_STATUS_TABLE + 1];
 			call MOD_2;									//Memory Manager
 		
 			disk_block=R0;
@@ -115,8 +114,8 @@ then 													//Non valid file descriptor case:
 			then
 				multipush(R5,R12,R13);							//To unlock the inode as that file is already opened by another process and cannot be deleted.
 					R1=RELEASE_INODE;						//Release Inode
-					R2=[SYSTEM_STATUS_TABLE+1];
-					R3=inode_index;
+					R2=inode_index;
+                    R3=[SYSTEM_STATUS_TABLE+1];
 					call MOD_0;							//Resource Manager
 				multipop(R5,R12,R13);
 				
@@ -124,10 +123,9 @@ then 													//Non valid file descriptor case:
 				[temp2 + 9]=0;
 				SP=[temp2 + 13];
 				ireturn;
-				
-			else
-				[temp1 + 8 + [lseek_addr]/512]=disk_block;				//Storing the newly allocated disk block in the inode table
 			endif;
+				
+            [temp1 + 8 + [lseek_addr]/512]=disk_block;				//Storing the newly allocated disk block in the inode table
 		multipop(R0,R1,R2,R3,R5,R6,R7,R8,R9,R12,R13);										
 	endif;
 	
@@ -135,16 +133,15 @@ then 													//Non valid file descriptor case:
 	disk_block=[temp1 + 8 + [lseek_addr]/512];
 	
 	//BUFFERED Write
-	multipush(R0,R1,R2,R3,R5,R6,R7,R8,R9,R12,R13);	
+	multipush(R0,R1,R2,R3,R4,R5,R6,R7,R8,R9,R12,R13);	
 		
-		R1=BUFFERED_WRITE;
-		R2=[SYSTEM_STATUS_TABLE + 1];	
-		R3=disk_block;
-		R4=[lseek_addr]%512;
-		R5=write_val;
+		R1=BUFFERED_WRITE;	
+		R2=disk_block;
+		R3=[lseek_addr]%512;
+		R4=write_val;
 		
 		call MOD_3;										//FILE MANAGER
-	multipop(R0,R1,R2,R3,R5,R6,R7,R8,R9,R12,R13);
+	multipop(R0,R1,R2,R3,R4,R5,R6,R7,R8,R9,R12,R13);
 	
 	if([lseek_addr]==[temp1+2])									//Increasing the file size if lseek is equal to the file size
 	then
@@ -154,12 +151,14 @@ then 													//Non valid file descriptor case:
 	
 	[lseek_addr]=[lseek_addr]+1;
 	
+    multipush(R5);
 	R1=RELEASE_INODE;						//Release Inode
-	R2=[SYSTEM_STATUS_TABLE+1];
-	R3=inode_index;
+	R2=inode_index;
+    R3=[SYSTEM_STATUS_TABLE+1];
 	call MOD_0;
+    multipop(R5);
 	/////////////////////////////////////////////////////////////////////
-	
+	[return_addr]=0;
 else		
 	multipush(R0,R1,R2,R3,R5,R6,R12,R13);								//PUSHING THE REGISTER VALUES BEFORE CALLING DEVICE MANAGER
 		R1=TERMINAL_WRITE;									//TERMINAL WRITE FUNCTION NUMBER

@@ -1,8 +1,7 @@
 // breakpoint;
 alias function_num R1;
-alias pid R2;
 
-if(function_num==1)							//GET_PCB_ENTRY
+if(function_num==GET_PCB_ENTRY)							//GET_PCB_ENTRY
 then
 	alias i R5;
 	i=0;
@@ -32,67 +31,10 @@ then
 	return;
 endif;
 
-if(function_num==KILL_ALL)						//KILL ALL PROCESS
-then
-	alias i R3;
-	i=0;
-	
-	while(i<MAX_FILE_NUM)
-	do
-		if([INODE_TABLE + i*16 + 1]!=-1)			//File Name
-		then
-			multipush(R1,R2,R3);
-				R1=ACQUIRE_INODE;
-				R2=[SYSTEM_STATUS_TABLE+1];
-				R3=i;
-				call MOD_0;					//Resource Manager
-			multipop(R1,R2,R3);
-		endif;
-		
-		i=i+1;
-	endwhile;
-	
-    i=2;
-    
-    while(i<16)
-    do
-    	if(i!=[SYSTEM_STATUS_TABLE+1] && [PROCESS_TABLE + i*16 + 4]!=TERMINATED)
-    	then
-    		multipush(R1,R2,R3);			
-    			R1=EXIT_PROCESS;				//EXIT FUNCTION
-    			R2=i;
-    			call MOD_1;
-    		multipop(R1,R2,R3);
-    	endif;
-    	  	
-    	i=i+1;
-    endwhile;
-    
-    i=0;
-	
-	while(i<MAX_FILE_NUM)
-	do
-		if([INODE_TABLE + i*16 + 1]!=-1)			//File Name
-		then
-			multipush(R1,R2,R3);
-				R1=RELEASE_INODE;
-				R2=[SYSTEM_STATUS_TABLE+1];
-				R3=i;
-				call MOD_0;					//Resource Manager
-			multipop(R1,R2,R3);
-		endif;
-		
-		i=i+1;
-	endwhile;
-	
-    R0=0;
-    return;
-    
-endif;
-
-if(function_num==2)                  //Free User AREA Page
+if(function_num==FREE_USER_AREA_PAGE)                  //Free User AREA Page
 then
 
+    alias pid R2;
 	alias offset R15;
 	alias base_addr R14;
 		
@@ -105,8 +47,9 @@ then
 		then
 			multipush(R0,R1,R2,R3,R4,R5,R6,R7,R11,R12,R13,R14,R15);
 				R1=RELEASE_SEMAPHORE;					//RELEASE SEMAPHORE
-				R2=pid;
-				R3=[base_addr+offset+1];				//SEMID
+                R3=pid;
+				R2=[base_addr+offset+1];				//SEMID
+				
 				
 				call MOD_0;						//RESOURCE MANAGER
 			multipop(R0,R1,R2,R3,R4,R5,R6,R7,R11,R12,R13,R14,R15);
@@ -116,8 +59,7 @@ then
 		then
 			multipush(R0,R1,R2,R3,R4,R5,R6,R7,R11,R12,R13,R14,R15);
 				R1=CLOSE;
-				R2=pid;
-				R3=[base_addr+offset+1];
+				R2=[base_addr+offset+1];
 			
 				call MOD_3;						//File Manager Module
 			multipop(R0,R1,R2,R3,R4,R5,R6,R7,R11,R12,R13,R14,R15);
@@ -128,7 +70,7 @@ then
 	endwhile;
 	
 	multipush(R1,R2,R3);
-		R1=2;                       		//Calling release page function
+		R1=RELEASE_PAGE;                       		//Calling release page function
 		R2=[PROCESS_TABLE + pid*16 + 11];	//As pid is not needed in release page function.
 		call MOD_2;                 		//Memory manager module
 	multipop(R1,R2,R3);
@@ -137,12 +79,10 @@ then
 endif;
 
 
-
-
-if (function_num==3)                //Exit Function
+if (function_num==EXIT_PROCESS)                //Exit Function
 then
 	// breakpoint;
-	
+	alias pid R2;
 	if([PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 9]!=9)			//Either the same process can call exit function to itself inside exec or int 10 or a different process can call on it.
 	then
 		alias i R3;
@@ -165,11 +105,13 @@ then
 	endif;
 	
 	multipush(R1,R2,R3);
-		R1=4;                       //Calling free page table function
+		R1=FREE_PAGE_TABLE;                       //Calling free page table function
 		R2=pid;
 		call MOD_1;                 //Process Manager module
-	// breakpoint;	
-		R1=2;                       //Calling free user area page function
+	multipop(R1,R2,R3);
+    multipush(R1,R2,R3);
+    // breakpoint;	
+		R1=FREE_USER_AREA_PAGE;                       //Calling free user area page function
 		R2=pid;
 		call MOD_1;                 //Process Manager module
 
@@ -181,13 +123,9 @@ then
 endif;
 
 
-
-
-
-
-if(function_num==4)					//Free Page TABLE
+if(function_num==FREE_PAGE_TABLE)					//Free Page TABLE
 then
-	
+	alias pid R2;
 	multipush(R1,R2,R3);
 	
 		alias i R4;
@@ -244,6 +182,65 @@ then
 	multipop(R1,R2,R3);
 
 	return;
+endif;
+
+if(function_num==KILL_ALL)						//KILL ALL PROCESS
+then
+    alias pid R2;
+	alias i R3;
+	i=0;
+	
+	while(i<MAX_FILE_NUM)
+	do
+		if([INODE_TABLE + i*16 + 1]!=-1)			//File Name
+		then
+			multipush(R1,R2,R3);
+				R1=ACQUIRE_INODE;
+                R2=i;
+				R3=[SYSTEM_STATUS_TABLE+1];
+				call MOD_0;					//Resource Manager
+			multipop(R1,R2,R3);
+		endif;
+		
+		i=i+1;
+	endwhile;
+	
+    i=2;
+    
+    while(i<16)
+    do
+    	if(i!=[SYSTEM_STATUS_TABLE+1] && [PROCESS_TABLE + i*16 + 4]!=TERMINATED)
+    	then
+    		multipush(R1,R2,R3);			
+    			R1=EXIT_PROCESS;				//EXIT FUNCTION
+    			R2=i;
+    			call MOD_1;
+    		multipop(R1,R2,R3);
+    	endif;
+    	  	
+    	i=i+1;
+    endwhile;
+    
+    i=0;
+	
+	while(i<MAX_FILE_NUM)
+	do
+		if([INODE_TABLE + i*16 + 1]!=-1)			//File Name
+		then
+			multipush(R1,R2,R3);
+				R1=RELEASE_INODE;
+                R2=i;
+				R3=[SYSTEM_STATUS_TABLE+1];
+				call MOD_0;					//Resource Manager
+			multipop(R1,R2,R3);
+		endif;
+		
+		i=i+1;
+	endwhile;
+	
+    R0=0;
+    return;
+    
 endif;
 
 

@@ -126,7 +126,7 @@ then
 			
 	if([temp1 + 4]==0)					//If it has exclusive permission(ie:Not open to all)
 	then
-		if([temp1 + 3]!=1 ||  [temp1+3]!=[temp2+3])	    //If the user is not root or the current userid is not same as the owner of the file.
+		if([temp1 + 3]!=1 &&  [temp1+3]!=[temp2+3])	    //If the user is not root or the current userid is not same as the owner of the file.
 		then
 			[return_address]=-1;				
 			[temp2 + 9]=0;

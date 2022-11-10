@@ -1,4 +1,4 @@
-// breakpoint;
+//breakpoint;
 alias current_pid R0;
 alias next_pid R1;
 current_pid=[SYSTEM_STATUS_TABLE+1];
@@ -58,7 +58,7 @@ then
 	BP=[[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 11]*512];	//BP=value at top of the kernel stack so as to restore in timer interrupt
 
 	[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 9]=0; 								        //Setting the mode flag to 0
-	breakpoint;
+	//breakpoint;
 	ireturn;
 endif;
 

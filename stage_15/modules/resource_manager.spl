@@ -28,18 +28,27 @@ else 				//Release Terminal
 
 if(pid==[TERMINAL_STATUS_TABLE+1])			//if the current pid is not equal to the one in the terminal status table then it means the current pid is releasing the terminal without acquiring it.
 then
-[PROCESS_TABLE + (pid*16) + 4]=READY;
-[TERMINAL_STATUS_TABLE]=0;
-R0=0;
 
-breakpoint;
-return;
+	alias pids R5;
+	pids=0;
+	while(pids<16)
+	do
+	if([PROCESS_TABLE + (pids*16) + 4]==WAIT_TERMINAL)
+	then
+	[PROCESS_TABLE + (pid*16) + 4]=READY;
+	endif;
+	pids=pids+1;
+	endwhile;
+
+	[TERMINAL_STATUS_TABLE]=0;
+	R0=0;
+
+	breakpoint;
+	return;
 
 else
-R0=-1;
-return;
-endif;
 
-
-
+	R0=-1;
+	return;
+	endif;
 endif;

@@ -34,15 +34,13 @@ endif;
 
 if  (function_num==TERMINAL_READ) 
 then
-
-	print("before Read");	
+	
 	multipush(R1,R2,R3);
 	breakpoint;
 	R1=8;
 	call MOD_0;
 	multipop(R1,R2,R3);
 	
-	print("Terminal Read");	
 	breakpoint;
 	read;
 	

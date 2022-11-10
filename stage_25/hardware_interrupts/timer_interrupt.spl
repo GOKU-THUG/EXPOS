@@ -1,4 +1,4 @@
-// breakpoint;
+
 [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 13]=SP;											//UPTR=SP
 SP=(([PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 11]*512)-1); 		//Pointing to the kernel stack
 
@@ -11,6 +11,6 @@ call MOD_5;								//SCHEDULER MODULE
 restore;
 
 SP=[PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 13];								           //SP=UPTR:To execute from where we stopped in the prev execution of the current process
-// breakpoint;
+
 ireturn;
 

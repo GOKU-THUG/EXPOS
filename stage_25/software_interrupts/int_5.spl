@@ -24,7 +24,7 @@ return_address=[PTBR+2*((userSP-1)/512)]*512 + (userSP-1)%512;
 
 if(system_call_val==2)							        	//OPEN FILE SYSTEM CALL
 then
-
+    breakpoint;
 	file=[[PTBR+2*((userSP-4)/512)]*512 + (userSP-4)%512];
 	
 	[PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 9]=2;				//MODE BIT
@@ -55,8 +55,7 @@ then
 
 	multipush(R0,R1,R2,R3,R4,R5,R6,R12,R13);
 		R1=OPEN;
-		R2=[SYSTEM_STATUS_TABLE + 1];
-		R3=file;
+		R2=file;
 		call MOD_3;								//FILE MANAGER
 		R10=R0;
 		
@@ -73,7 +72,7 @@ then
 	[temp1 + i + 1]=R10;								//INDEX FIELD=OPEN FILE TABLE ENTRY;	
 		
 	[return_address]=(i-496)/2;							//Return the perprocess resource table index
-	
+	breakpoint;
 endif;
 
 
@@ -81,7 +80,8 @@ endif;
 
 if(system_call_val==3)									//Close System Call
 then
-
+    breakpoint;
+    
 	file_desc=[[PTBR+2*((userSP-4)/512)]*512 + (userSP-4)%512];			//Getting the file descriptor from the user stack
 	
 	[PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 9]=3;				//MODE BIT
@@ -108,8 +108,7 @@ then
 
 	multipush(R0,R1,R2,R3,R4,R5,R6,R12,R13);
 		R1=CLOSE;
-		R2=[SYSTEM_STATUS_TABLE + 1];					//FILE MANAGER
-		R3=[temp1 + 1];							//OPEN FILE TABLE ENTRY
+		R2=[temp1 + 1];							//OPEN FILE TABLE ENTRY
 		call MOD_3;								
 	multipop(R0,R1,R2,R3,R4,R5,R6,R12,R13);
 	
@@ -120,12 +119,12 @@ then
 	[temp1 + 1]=-1;			//OPEN FILE TABLE ENTRY FIELD=-1;	
 	
 	[return_address]=0;
-	
+	breakpoint;
 endif;
 
 if(system_call_val==6)									//Seek Sys Call
 then
-	
+
 	alias offset R8;
 	alias lseek_addr R9;
 	alias open_entry R10;
@@ -160,8 +159,8 @@ then
 	
 	multipush(R5,R7,R8,R9,R11,R12,R13);							//To lock the inode so that no other process now uses this file and the file can be deleted safely.
 		R1=ACQUIRE_INODE;
-		R2=[SYSTEM_STATUS_TABLE+1];
-		R3=inode_index;
+        R2=inode_index;
+		R3=[SYSTEM_STATUS_TABLE+1];
 		call MOD_0;	
 		
 		R10=R0;											//Resource Manager
@@ -182,8 +181,8 @@ then
 	then
 		multipush(R5,R7,R8,R9,R12,R13);		
 			R1=RELEASE_INODE;						//Release Inode
-			R2=[SYSTEM_STATUS_TABLE+1];
-			R3=inode_index;
+			R2=inode_index;
+            R3=[SYSTEM_STATUS_TABLE+1];
 			call MOD_0;
 		multipop(R5,R7,R8,R9,R12,R13);	
 		
@@ -215,8 +214,8 @@ then
 	
 	multipush(R5,R7,R8,R9,R12,R13);		
 		R1=RELEASE_INODE;						//Release Inode
-		R2=[SYSTEM_STATUS_TABLE+1];
-		R3=inode_index;
+		R2=inode_index;
+        R3=[SYSTEM_STATUS_TABLE+1];
 		call MOD_0;
 	multipop(R5,R6,R7,R8,R9,R12,R13);	
 	

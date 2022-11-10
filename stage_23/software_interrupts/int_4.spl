@@ -51,7 +51,6 @@ then
 		i=i+1;
 	endwhile;
 		
-	print (i);
 	if(i==MAX_FILE_NUM)
 	then
 		[return_address]=-1;

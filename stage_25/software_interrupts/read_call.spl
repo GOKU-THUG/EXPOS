@@ -55,8 +55,8 @@ then
 	//Locking the inode table
 	multipush(R0,R1,R2,R3,R5,R6,R7,R8,R12,R13);				//To lock the inode so that no other process now uses this file and the file can be deleted safely.
 		R1=ACQUIRE_INODE;
-		R2=[SYSTEM_STATUS_TABLE+1];
-		R3=inode_index;
+        R2=inode_index;
+		R3=[SYSTEM_STATUS_TABLE+1];
 		call MOD_0;	
 		
 		R10=R0;						//Resource Manager
@@ -84,8 +84,8 @@ then
 		then
 			multipush(R0,R1,R2,R3,R5,R7,R8,R9,R12,R13);						//To unlock the inode as that file is already opened by another process and cannot be deleted.
 				R1=RELEASE_INODE;								//Release Inode
-				R2=[SYSTEM_STATUS_TABLE+1];
-				R3=inode_index;
+				R2=inode_index;
+                R3=[SYSTEM_STATUS_TABLE+1];
 				call MOD_0;									//Resource Manager
 			 multipop(R0,R1,R2,R3,R5,R7,R8,R9,R12,R13);
 				
@@ -103,8 +103,8 @@ then
 		then
 			multipush(R0,R1,R2,R3,R5,R7,R8,R9,R12,R13);						//To unlock the inode as that file is already opened by another process and cannot be deleted.
 				R1=RELEASE_INODE;								//Release Inode
-				R2=[SYSTEM_STATUS_TABLE+1];
-				R3=inode_index;
+				R2=inode_index;
+                R3=[SYSTEM_STATUS_TABLE+1];
 				call MOD_0;									//Resource Manager
 			
 			multipop(R0,R1,R2,R3,R5,R7,R8,R9,R12,R13);
@@ -117,16 +117,15 @@ then
 		endif;
 		
 		//BUFFERED READ
-		multipush(R0,R1,R2,R3,R5,R7,R8,R9,R12,R13);	
+		multipush(R0,R1,R2,R3,R4,R5,R7,R8,R9,R12,R13);	
 			
 			R1=BUFFERED_READ;
-			R2=[SYSTEM_STATUS_TABLE + 1];	
-			R3=[temp1 + 8 + ([lseek_addr]/512)];
-			R4=[lseek_addr]%512;
-			R5=read_addr;
+			R2=[temp1 + 8 + ([lseek_addr]/512)];
+			R3=[lseek_addr]%512;
+			R4=read_addr;
 			
 			call MOD_3;										//FILE MANAGER
-		multipop(R0,R1,R2,R3,R5,R7,R8,R9,R12,R13);		
+		multipop(R0,R1,R2,R3,R4,R5,R7,R8,R9,R12,R13);		
 		
 		[lseek_addr]=[lseek_addr]+1;
 	endif;
@@ -135,8 +134,8 @@ then
 	//RELEASE INODE
 	multipush(R0,R1,R2,R3,R5,R7,R8,R9,R12,R13);						//To unlock the inode as that file is already opened by another process and cannot be deleted.
 		R1=RELEASE_INODE;								//Release Inode
-		R2=[SYSTEM_STATUS_TABLE+1];
-		R3=inode_index;
+		R2=inode_index;
+        R3=[SYSTEM_STATUS_TABLE+1];
 		call MOD_0;									//Resource Manager
 	multipop(R0,R1,R2,R3,R5,R7,R8,R9,R12,R13);
 		

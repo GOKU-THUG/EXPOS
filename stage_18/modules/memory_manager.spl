@@ -1,7 +1,7 @@
 breakpoint;
 alias function_num R1;
 
-if(function_num==2)         //Release Page function:LIKE RELEASE TERMINAL
+if(function_num==RELEASE_PAGE)         //Release Page function:LIKE RELEASE TERMINAL
 then
 
     alias page_num R2;
@@ -31,8 +31,7 @@ then
 endif;
 
 
-
-if(function_num==1)         //Get Free Page function:LIKE ACQUIRE TERMINAL:MEM_FREE_COUNT,WAIT_MEM_COUNT,MEM_FREE_LIST
+if(function_num==GET_FREE_PAGE)         //Get Free Page function:LIKE ACQUIRE TERMINAL:MEM_FREE_COUNT,WAIT_MEM_COUNT,MEM_FREE_LIST
 then
 
     alias pid R2;
@@ -69,3 +68,5 @@ then
     breakpoint;
     return;
 endif;
+
+

@@ -49,8 +49,7 @@ then
 	alias j R11;
 	alias ptbr R12;
 	i=0;
-	print (disk_block);
-	
+
 	
 	while(i<16)
 	do
@@ -62,8 +61,6 @@ then
 		do	
 			if([DISK_MAP_TABLE + i*10 + j]==disk_block && [ptbr+2*j]!=-1)
 			then
-				print i;
-				print [ptbr+2*j];
 				mem_page=[ptbr+2*j];										//RETURNS THE CODE PAGE;								
 				[MEMORY_FREE_LIST + mem_page]=[MEMORY_FREE_LIST + mem_page]+1;					//AS PAGE IS BEING SHARED BY ANOTHER PROCESS
 				return;
