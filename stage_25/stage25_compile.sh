@@ -1,5 +1,4 @@
 #!/bin/bash
-
 ./spl ../../os_lab/stage_25/exception/exc_int.spl
 ./spl ../../os_lab/stage_25/hardware_interrupts/console_interrupt.spl
 ./spl ../../os_lab/stage_25/hardware_interrupts/disk_interrupt.spl

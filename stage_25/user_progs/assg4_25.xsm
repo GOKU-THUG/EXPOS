@@ -155,7 +155,7 @@ MOV R0,"Write"
 PUSH R0
 MOV R0,-2
 PUSH R0
-MOV R0,"stored"
+MOV R0,"Stored"
 PUSH R0
 ADD SP,2
 CALL 0

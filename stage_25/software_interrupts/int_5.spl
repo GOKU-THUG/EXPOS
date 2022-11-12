@@ -1,5 +1,3 @@
-// breakpoint;
-
 alias userSP R0;
 alias descriptor_phys_pg_no R1;
 alias descriptor_phy_address R2;
@@ -9,14 +7,14 @@ alias return_address R5;
 alias file R6;
 alias file_desc R7;
 alias temp1 R12;
-alias temp2 R13;
+alias currentpcb R13;
 
-temp2=PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16;
+currentpcb=PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16;
 
-[temp2 + 13]=SP;				//UPTR=SP
+[currentpcb + 13]=SP;				//UPTR=SP
 userSP=SP;
 
-SP=[temp2 + 11]*512-1;			//SP=User Area Page
+SP=[currentpcb + 11]*512-1;			//SP=User Area Page
 
 system_call_val=[[PTBR+2*((userSP-5)/512)]*512 + (userSP-5)%512];
 
@@ -24,7 +22,7 @@ return_address=[PTBR+2*((userSP-1)/512)]*512 + (userSP-1)%512;
 
 if(system_call_val==2)							        	//OPEN FILE SYSTEM CALL
 then
-    breakpoint;
+breakpoint;
 	file=[[PTBR+2*((userSP-4)/512)]*512 + (userSP-4)%512];
 	
 	[PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 9]=2;				//MODE BIT
@@ -32,7 +30,7 @@ then
 
 
 	i=496;
-	temp1=[temp2+ 11]*512;
+	temp1=[currentpcb+ 11]*512;
 
 	while(i<=511)
 	do
@@ -47,8 +45,8 @@ then
 	if(i==512)									//If there os no free resource table entry in per process resource table
 	then
 
-		[temp2 + 9]=0;
-		SP=[temp2 + 13];
+		[currentpcb + 9]=0;
+		SP=[currentpcb + 13];
 		[return_address]=-3;
 		ireturn;
 	endif;
@@ -58,21 +56,22 @@ then
 		R2=file;
 		call MOD_3;								//FILE MANAGER
 		R10=R0;
+    multipop(R0,R1,R2,R3,R4,R5,R6,R12,R13);
 		
-		if(R0<0)
+    if(R10<0)
 		then
-			[temp2 + 9]=0;
-			SP=[temp2 + 13];
-			[return_address]=R0;
+			[currentpcb + 9]=0;
+			SP=[currentpcb + 13];
+			[return_address]=R10;
 			ireturn;
 		endif;
-	multipop(R0,R1,R2,R3,R4,R5,R6,R12,R13);
+	
 	
 	[temp1 + i]=0;									//RESOURCE IDENTIFIER FIELD=0
 	[temp1 + i + 1]=R10;								//INDEX FIELD=OPEN FILE TABLE ENTRY;	
 		
 	[return_address]=(i-496)/2;							//Return the perprocess resource table index
-	breakpoint;
+breakpoint;
 endif;
 
 
@@ -80,7 +79,7 @@ endif;
 
 if(system_call_val==3)									//Close System Call
 then
-    breakpoint;
+
     
 	file_desc=[[PTBR+2*((userSP-4)/512)]*512 + (userSP-4)%512];			//Getting the file descriptor from the user stack
 	
@@ -89,19 +88,19 @@ then
 
 	if(file_desc<0 || file_desc>7)
 	then
-		[temp2 + 9]=0;
-		SP=[temp2 + 13];
+		[currentpcb + 9]=0;
+		SP=[currentpcb + 13];
 		[return_address]=-1;
 		ireturn;
 	endif;
 	
-	temp1=[temp2 + 11]*512 + (2*file_desc + 496);
+	temp1=[currentpcb + 11]*512 + (2*file_desc + 496);
 
 	
 	if([temp1]!=0)									//Resource Identifier:If it is invalid or the resource is not a file.
 	then
-		[temp2 + 9]=0;
-		SP=[temp2 + 13];
+		[currentpcb + 9]=0;
+		SP=[currentpcb + 13];
 		[return_address]=-1;
 		ireturn;
 	endif;
@@ -119,7 +118,6 @@ then
 	[temp1 + 1]=-1;			//OPEN FILE TABLE ENTRY FIELD=-1;	
 	
 	[return_address]=0;
-	breakpoint;
 endif;
 
 if(system_call_val==6)									//Seek Sys Call
@@ -137,40 +135,40 @@ then
 
 	if(file_desc<0 || file_desc>7)
 	then
-		[temp2 + 9]=0;
-		SP=[temp2 + 13];
+		[currentpcb + 9]=0;
+		SP=[currentpcb + 13];
 		[return_address]=-1;
 		ireturn;
 	endif;
 	
-	temp1=[temp2 + 11]*512 + (2*file_desc + 496);
+	temp1=[currentpcb + 11]*512 + (2*file_desc + 496);
 	
-	if([temp1]!=0)									//Resource Identifier:If it is invalid or the resource is not a file.
+	if([temp1]!=FILE)									//Resource Identifier:If it is invalid or the resource is not a file.
 	then
-		[temp2 + 9]=0;
-		SP=[temp2 + 13];
+		[currentpcb + 9]=0;
+		SP=[currentpcb + 13];
 		[return_address]=-1;
 		ireturn;
 	endif;
 	
-	temp1=[temp2 + 11]*512 + (2*file_desc + 496);
+	temp1=[currentpcb + 11]*512 + (2*file_desc + 496);
 	open_entry=[temp1+1];
 	inode_index=[OPEN_FILE_TABLE + 4*open_entry];	
 	
-	multipush(R5,R7,R8,R9,R11,R12,R13);							//To lock the inode so that no other process now uses this file and the file can be deleted safely.
+	multipush(R5,R7,R8,R9,R11,R12,R13);								//To lock the inode so that no other process now uses this file and the file can be deleted safely.
 		R1=ACQUIRE_INODE;
         R2=inode_index;
 		R3=[SYSTEM_STATUS_TABLE+1];
 		call MOD_0;	
 		
 		R10=R0;											//Resource Manager
-	multipop(R5,R7,R8,R9,R11,R12,R13);
+    multipop(R5,R7,R8,R9,R11,R12,R13);
 	
 	if(R10==-1)											//There is no such file:
 	then	
 		[return_address]=-1;	
-		[temp2 + 9]=0;										//Setting the mode bit back to 0;
-		SP=[temp2 + 13];									//Setting sp back to user stack;
+		[currentpcb + 9]=0;										//Setting the mode bit back to 0;
+		SP=[currentpcb + 13];									//Setting sp back to user stack;
 		ireturn;
 	endif;
 	
@@ -179,15 +177,15 @@ then
 	
 	if([lseek_addr]+offset<0)
 	then
-		multipush(R5,R7,R8,R9,R12,R13);		
+        multipush(R5,R7,R8,R9,R12,R13);		
 			R1=RELEASE_INODE;						//Release Inode
 			R2=inode_index;
             R3=[SYSTEM_STATUS_TABLE+1];
 			call MOD_0;
-		multipop(R5,R7,R8,R9,R12,R13);	
+        multipop(R5,R7,R8,R9,R12,R13);	
 		
-		[temp2 + 9]=0;
-		SP=[temp2 + 13];
+		[currentpcb + 9]=0;
+		SP=[currentpcb + 13];
 		[return_address]=-2;
 		ireturn;
 	endif;
@@ -212,7 +210,7 @@ then
 		endif;
 	endif;
 	
-	multipush(R5,R7,R8,R9,R12,R13);		
+	multipush(R5,R6,R7,R8,R9,R12,R13);		
 		R1=RELEASE_INODE;						//Release Inode
 		R2=inode_index;
         R3=[SYSTEM_STATUS_TABLE+1];
@@ -226,4 +224,5 @@ endif;
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 9]=0;
 SP=[PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 13];
 
+breakpoint;
 ireturn;
