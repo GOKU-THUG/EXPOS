@@ -1,0 +1,72 @@
+// breakpoint;
+alias current_pid R0;
+alias next_pid R1;
+current_pid=[SYSTEM_STATUS_TABLE+1];
+
+multipush (BP);							//There is no push in spl only multipush.
+
+[PROCESS_TABLE + (current_pid*16) + 12] = SP % 512;			//KPTR
+[PROCESS_TABLE + (current_pid*16) + 14] = PTBR;				//PTBR
+[PROCESS_TABLE + (current_pid*16) + 15] = PTLR;				//PTLR
+
+next_pid=(current_pid+1)%16;
+if(next_pid==0)				//Idle process will only run if all other processes are terminated
+then
+	next_pid=1;
+endif;
+
+
+while(next_pid!=current_pid)
+do
+if([PROCESS_TABLE + (next_pid*16) + 4] == READY || [PROCESS_TABLE + (next_pid*16) + 4] == CREATED)
+then
+	break;
+endif;
+
+next_pid=(next_pid+1)%16;
+
+	if(next_pid==0)
+	then
+		if(current_pid==0)				//Idle process will only run if all other processes are terminated
+		then
+			break;
+		endif;
+		
+		next_pid=1;
+	endif;
+
+endwhile;
+
+if(next_pid==current_pid)
+then
+	next_pid=0;
+endif;
+
+[SYSTEM_STATUS_TABLE+1]=next_pid;
+
+
+PTBR=[PROCESS_TABLE + (next_pid*16) + 14];
+PTLR=[PROCESS_TABLE + (next_pid*16) + 15];
+
+if([PROCESS_TABLE + (next_pid*16) + 4] == CREATED)
+then
+
+	[PROCESS_TABLE + (next_pid*16) + 4] = RUNNING;
+
+	SP=[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 13];  //SP=UPTR;
+
+	BP=[[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 11]*512];	//BP=value at top of the kernel stack so as to restore in timer interrupt
+
+	[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 9]=0; 								        //Setting the mode flag to 0
+	//breakpoint;
+	ireturn;
+endif;
+
+
+SP=([PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 11]*512) + [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 12];	//SP=kernel stack so as to restore in timer interrupt
+[PROCESS_TABLE + (next_pid*16) + 4] = RUNNING;
+
+multipop (BP);
+
+//breakpoint;
+return;
