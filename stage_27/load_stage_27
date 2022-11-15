@@ -1,0 +1,50 @@
+load --idle /home/goku/os_lab/stage_27/user_progs/idle_code.xsm
+load --init /home/goku/os_lab/stage_27/user_progs/init_code.xsm
+load --shell /home/goku/os_lab/stage_27/user_progs/shell.xsm
+load --exec /home/goku/os_lab/stage_27/user_progs/commands/cat.xsm
+load --exec /home/goku/os_lab/stage_27/user_progs/commands/cp.xsm
+load --exec /home/goku/os_lab/stage_27/user_progs/commands/ls.xsm
+load --exec /home/goku/os_lab/stage_27/user_progs/commands/lu.xsm
+load --exec /home/goku/os_lab/stage_27/user_progs/commands/rm.xsm
+load --exec /home/goku/os_lab/stage_27/user_progs/commands/ru.xsm
+load --exec /home/goku/os_lab/stage_27/user_progs/fcreate.xsm
+load --exec /home/goku/os_lab/stage_27/user_progs/fdelete.xsm
+load --exec /home/goku/os_lab/stage_27/user_progs/assg1_27.xsm
+load --exec /home/goku/os_lab/stage_27/user_progs/pid.xsm
+load --exec /home/goku/os_lab/stage_27/user_progs/assg2_27.xsm
+load --exec /home/goku/os_lab/stage_27/user_progs/assg3_27.xsm
+load --exec /home/goku/os_lab/stage_27/user_progs/pgm1.xsm
+load --exec /home/goku/os_lab/stage_27/user_progs/assg4_27.xsm
+load --exec /home/goku/os_lab/stage_27/user_progs/pgm2.xsm
+load --exec /home/goku/os_lab/stage_27/user_progs/assg4/merge.xsm
+load --exec /home/goku/os_lab/stage_27/user_progs/assg4/m_store.xsm
+load --exec /home/goku/os_lab/stage_27/user_progs/assg4/m_sort.xsm
+load --exec /home/goku/os_lab/stage_27/user_progs/assg4/m_merge.xsm
+load --module 0 /home/goku/os_lab/stage_27/modules/resource_manager.xsm
+load --module 1 /home/goku/os_lab/stage_27/modules/process_manager.xsm
+load --module 2 /home/goku/os_lab/stage_27/modules/memory_manager.xsm
+load --module 3 /home/goku/os_lab/stage_27/modules/file_manager.xsm
+load --module 4 /home/goku/os_lab/stage_27/modules/device_manager.xsm
+load --module 5 /home/goku/os_lab/stage_27/modules/scheduler.xsm
+load --module 6 /home/goku/os_lab/stage_27/modules/pager_mod.xsm
+load --module 7 /home/goku/os_lab/stage_27/modules/boot_mod.xsm
+load --int=4 /home/goku/os_lab/stage_27/software_interrupts/int_4.xsm
+load --int=5 /home/goku/os_lab/stage_27/software_interrupts/int_5.xsm
+load --int=6 /home/goku/os_lab/stage_27/software_interrupts/read_call.xsm
+load --int=7 /home/goku/os_lab/stage_27/software_interrupts/write_call.xsm
+load --int=8 /home/goku/os_lab/stage_27/software_interrupts/fork_call.xsm
+load --int=9 /home/goku/os_lab/stage_27/software_interrupts/exec_call.xsm
+load --int=10 /home/goku/os_lab/stage_27/software_interrupts/int_10.xsm
+load --int=11 /home/goku/os_lab/stage_27/software_interrupts/int_11.xsm
+load --int=12 /home/goku/os_lab/stage_27/software_interrupts/int_12.xsm
+load --int=13 /home/goku/os_lab/stage_27/software_interrupts/int_13.xsm
+load --int=14 /home/goku/os_lab/stage_27/software_interrupts/int_14.xsm
+load --int=15 /home/goku/os_lab/stage_27/software_interrupts/shutdown_call.xsm
+load --int=16 /home/goku/os_lab/stage_27/software_interrupts/int_16.xsm
+load --int=17 /home/goku/os_lab/stage_27/software_interrupts/int_17.xsm
+load --int=timer /home/goku/os_lab/stage_27/hardware_interrupts/timer_interrupt.xsm
+load --int=console /home/goku/os_lab/stage_27/hardware_interrupts/console_interrupt.xsm
+load --int=disk /home/goku/os_lab/stage_27/hardware_interrupts/disk_interrupt.xsm
+load --exhandler /home/goku/os_lab/stage_27/exception/exc_int.xsm
+load --os /home/goku/os_lab/stage_27/os_startup/os_code.xsm
+load --library /home/goku/myexpos/expl/library.lib
