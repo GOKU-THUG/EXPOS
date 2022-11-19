@@ -1,0 +1,178 @@
+//Loading BOOT MODULE CODE
+loadi(54,67);
+loadi(55,68);
+
+//IDLE Program(PRIMARY CORE)
+loadi(69,11);
+
+////////////////////////////////////
+//Secondary CORE
+//Loading secondary bootstrap code
+loadi(128,512);
+
+//Loading ACCESS CONTROL MODULE
+loadi(132,516);
+loadi(133,517);
+//////////////////////////////////////
+SP=76*512-1; //SP points to the kernel stack of idle process;
+call BOOT_MODULE; //This will push (IP+2) to the kernel stack and then call boot module;
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//IDLE page table:
+
+PTBR=PAGE_TABLE_BASE; 			
+PTLR=10;
+
+//Page(0,1):Library code
+//Page(2,3):Heap Segment
+//Page(4,5):Code Segment
+//Page(8,9):Stack Segment
+
+//LIBRARY CODE
+
+[PTBR+0]=-1;
+[PTBR+1]="0000";
+
+[PTBR+2]=-1;
+[PTBR+3]="0000";
+
+//HEAP SEGMENT 
+
+[PTBR+4]=-1;
+[PTBR+5]="0000";
+
+[PTBR+6]=-1;
+[PTBR+7]="0000";
+
+//Code Segment
+
+[PTBR+8]=69;
+[PTBR+9]="0100";
+
+[PTBR+10]=-1;
+[PTBR+11]="0000";
+
+[PTBR+12]=-1;
+[PTBR+13]="0000";
+
+[PTBR+14]=-1;
+[PTBR+15]="0000";
+
+//Stack Segment
+[PTBR+16]=70;
+[PTBR+17]="0110";
+
+[PTBR+18]=-1;
+[PTBR+19]="0000";
+
+
+//Process Table of IDLE Process
+alias pos R0;
+pos=PROCESS_TABLE + 0*16;
+
+[pos + 0]=0;			     //TICK
+[pos + 1]=0;			     //PID
+[pos + 3]=0;			     //USERID
+[pos + 4]=RUNNING;		     //STATE
+[pos + 11]=76;		     //USER AREA PAGE
+[pos + 12]=0;		     //KPTR
+[pos + 13]=8*512;		     //UPTR:Virtual Address
+[pos + 14]=PAGE_TABLE_BASE;  //PTBR:As there were 10 pages  and each page occupies 2 words in the init code previously
+[pos + 15]=10;		     //PTLR
+
+//Top of the user stack of the idle process
+[70*512]=[(69*512)+1];
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//SWAPPER DAEMON page table:
+
+PTBR=PAGE_TABLE_BASE+15*20; 			
+PTLR=10;
+
+//Page(0,1):Library code
+//Page(2,3):Heap Segment
+//Page(4,5):Code Segment
+//Page(8,9):Stack Segment
+
+//LIBRARY CODE
+
+[PTBR+0]=-1;
+[PTBR+1]="0000";
+
+[PTBR+2]=-1;
+[PTBR+3]="0000";
+
+//HEAP SEGMENT 
+
+[PTBR+4]=-1;
+[PTBR+5]="0000";
+
+[PTBR+6]=-1;
+[PTBR+7]="0000";
+
+//Code Segment
+
+[PTBR+8]=69;
+[PTBR+9]="0100";
+
+[PTBR+10]=-1;
+[PTBR+11]="0000";
+
+[PTBR+12]=-1;
+[PTBR+13]="0000";
+
+[PTBR+14]=-1;
+[PTBR+15]="0000";
+
+//Stack Segment
+[PTBR+16]=81;
+[PTBR+17]="0110";
+
+[PTBR+18]=-1;
+[PTBR+19]="0000";
+
+
+//Process Table of SWAPPER DAEMON Process
+pos=PROCESS_TABLE + 15*16;
+
+[pos + 0]=0;			     //TICK
+[pos + 1]=15;			     //PID
+[pos + 3]=0;			     //USERID
+[pos + 4]=CREATED;		     //STATE
+[pos + 11]=82;		     //USER AREA PAGE
+[pos + 12]=0;		     //KPTR
+[pos + 13]=8*512;		     //UPTR:Virtual Address
+[pos + 14]=PAGE_TABLE_BASE+20*15;  //PTBR:As there were 10 pages  and each page occupies 2 words in the init code previously
+[pos + 15]=10;		     //PTLR
+
+//Top of the user stack of the SWAPPER DAEMON process
+[81*512]=[(69*512)+1];
+/////////////////////////////////////////////////////////////////////////////////////////////
+//System Status Table:Stores the meta data like amount of free space,currently running process,pid,amount of swapped space etc;
+PTBR=PAGE_TABLE_BASE; 			
+PTLR=10;
+
+[SYSTEM_STATUS_TABLE+5*CORE+1]=0;//stores the pid of the currently executing process;
+
+//Note:The first process run is the init process;That is why we have given the pid as 1;
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+SP=8*512; //Since it executes the init instruction first when ireturn is called as we have set ptbr to that of the init process.
+
+//breakpoint;
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+start;
+
+breakpoint;
+ireturn;
+
+
+
+
+
+
+
+
+

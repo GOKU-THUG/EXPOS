@@ -1,0 +1,55 @@
+alias function_num R1;
+
+if(function_num==ACQUIRE_KERN_LOCK)
+then
+
+    if(CORE==SECONDARY_CORE)     //If Secondary Core
+    then
+        if([SYSTEM_STATUS_TABLE+5]!=0 || [SYSTEM_STATUS_TABLE+7]==1)        //IF PAGING STATUS OR LOGOUT STATUS IS 1;
+        then
+
+            [PROCESS_TABLE+[SYSTEM_STATUS_TABLE+5*CORE+1]*16+4]=READY;
+            
+            multipush(R1);
+            call CONTEXT_SWITCH;
+            multipop(R1);
+        endif;
+    endif;
+
+    while(tsl(KERN_LOCK)==1)
+    do
+        continue;
+    endwhile;
+
+    return;
+endif;
+
+/////////////////////////////////////////////////////////////
+if(function_num==ACQUIRE_SCHED_LOCK)
+then
+    while(tsl(SCHED_LOCK)==1)
+    do
+        continue;
+    endwhile;
+
+    return;
+endif;
+///////////////////////////////////////////////////////////////
+if(function_num==ACQUIRE_GLOCK)
+then
+    while(tsl(GLOCK)==1)
+    do
+        continue;
+    endwhile;
+
+    return;
+endif;
+/////////////////////////////////////////////////////////////
+if(function_num==RELEASE_LOCK)
+then
+    alias lockvaraddr R2;
+    [lockvaraddr]=0;
+
+    return;
+endif;
+/////////////////////////////////////////////////////////////

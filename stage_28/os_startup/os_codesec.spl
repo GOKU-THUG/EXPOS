@@ -1,0 +1,75 @@
+////////////////////////////////////////////////////////////////////////////////////
+//IDLE2 page table:(SECONDARY CORE)
+
+PTBR=PAGE_TABLE_BASE+14*20; 			
+PTLR=10;
+
+//Page(0,1):Library code
+//Page(2,3):Heap Segment
+//Page(4,5):Code Segment
+//Page(8,9):Stack Segment
+
+//LIBRARY CODE
+
+[PTBR+0]=-1;
+[PTBR+1]="0000";
+
+[PTBR+2]=-1;
+[PTBR+3]="0000";
+
+//HEAP SEGMENT 
+
+[PTBR+4]=-1;
+[PTBR+5]="0000";
+
+[PTBR+6]=-1;
+[PTBR+7]="0000";
+
+//Code Segment
+
+[PTBR+8]=69;
+[PTBR+9]="0100";
+
+[PTBR+10]=-1;
+[PTBR+11]="0000";
+
+[PTBR+12]=-1;
+[PTBR+13]="0000";
+
+[PTBR+14]=-1;
+[PTBR+15]="0000";
+
+//Stack Segment
+[PTBR+16]=83;
+[PTBR+17]="0110";
+
+[PTBR+18]=-1;
+[PTBR+19]="0000";
+
+
+//Process Table of IDLE2 Process
+alias pos R0;
+pos=PROCESS_TABLE + 14*16;
+
+[pos + 0]=0;			     //TICK
+[pos + 1]=14;			     //PID
+[pos + 3]=0;			     //USERID
+[pos + 4]=RUNNING;		     //STATE
+[pos + 11]=84;		     //USER AREA PAGE
+[pos + 12]=0;		     //KPTR
+[pos + 13]=8*512;		     //UPTR:Virtual Address
+[pos + 14]=PAGE_TABLE_BASE+14*20;  //PTBR:As there were 10 pages  and each page occupies 2 words in the init code previously
+[pos + 15]=10;		     //PTLR
+
+//Top of the user stack of the idle2 process
+[83*512]=[(69*512)+1];
+
+PTBR=PAGE_TABLE_BASE+14*20;
+PTLR=10;
+
+[SYSTEM_STATUS_TABLE+5*CORE+1]=14;
+
+SP=8*512;
+
+breakpoint;
+ireturn;

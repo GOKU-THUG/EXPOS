@@ -1,0 +1,103 @@
+//LogOut System Call
+alias return_address R0;
+alias userSP R1;
+alias sys_call_no R2;
+alias return_value R14;
+
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE+5*CORE+1]*16 + 13]=SP;			//UPTR=SP
+userSP = SP;
+
+SP=[PROCESS_TABLE + [SYSTEM_STATUS_TABLE+5*CORE+1]*16 + 11]*PAGE_SIZE - 1;		//SP=USERAREA PAGE
+
+///////////////////////////////////
+multipush(R1);
+R1=ACQUIRE_KERN_LOCK;
+call ACCESS_CONTROL;
+multipop(R1);
+
+return_value=0;
+///////////////////////////////////
+
+sys_call_no=[[PTBR+2*((userSP-5)/512)]*512 + (userSP-5)%512];		//sys_call_no
+
+if(sys_call_no==28)                                             //LOGOUT SYS CALL
+then
+	[PROCESS_TABLE + [SYSTEM_STATUS_TABLE+5*CORE+1]*16 + 9]=28;
+
+    if([SYSTEM_STATUS_TABLE+5*CORE+1]!=SHELL_PROCESS)
+    then
+        return_value=-1;
+        goto release_lock;
+    endif;
+ 
+    //STAGE 28 MODIFICATIONS
+    ///////////////////////////////////////////////
+
+    [SYSTEM_STATUS_TABLE+7]=1;  //Setting logout status=1;
+
+    multipush(R0,R1,R2);
+	R1=RELEASE_LOCK;
+	R2=KERN_LOCK;
+	call ACCESS_CONTROL;
+    multipop(R0,R1,R2);
+
+    //VIP STEP:
+    [PROCESS_TABLE + 16*SHELL_PROCESS + 4] = READY;		//set state to ready so that this process can be rescheduled.
+    //Waits until the secondary core schedules idle 2
+    multipush(R0,R1,R2);
+    call SCHEDULER;                                         //Scheduler Module  
+    multipop(R0,R1,R2);
+
+    multipush(R0,R1,R2);
+	    R1=ACQUIRE_KERN_LOCK;
+	    call ACCESS_CONTROL;
+    multipop(R0,R1,R2);
+    //////////////////////////////////////////////////////
+    multipush(R0,R1,R2);
+        R1=KILL_ALL;
+        R2=[SYSTEM_STATUS_TABLE+5*CORE+1];
+        call MOD_1;                                                 //Process Manager
+    multipop(R0,R1,R2);
+
+    [SYSTEM_STATUS_TABLE+7]=0;  //Setting logout status=0;
+    ///////////////////////////////////////////////////////
+    [PROCESS_TABLE + 2*16 + 4]=TERMINATED;                          //TERMINATES THE SHELL PROCESS
+
+    [[PTBR + 16]*512]=[[PTBR+8]*512 + 1];
+    [PROCESS_TABLE + 2*16 + 13]=8*512;
+  
+    [PROCESS_TABLE + 1*16 + 4]=READY;                               //LOGIN PROCESS WHICH WAS INITIALLY WAITING FOR THE SHELL PROCESS TO FINISH IS MADE READY.
+    [SYSTEM_STATUS_TABLE + 0]=0;                                    //CURRENT USER ID=0:KERNEL;
+
+    multipush(R0,R1,R2);
+	R1=RELEASE_LOCK;
+	R2=KERN_LOCK;
+	call ACCESS_CONTROL;
+    multipop(R0,R1,R2);
+
+    multipush(R0,R1,R2);
+    call SCHEDULER;                                         //Scheduler Module  
+    multipop(R0,R1,R2);
+
+    multipush(R0,R1,R2);
+	    R1=ACQUIRE_KERN_LOCK;
+	    call ACCESS_CONTROL;
+    multipop(R0,R1,R2);
+endif;
+
+///////////////////////////////////
+release_lock:
+
+userSP=[PROCESS_TABLE + [SYSTEM_STATUS_TABLE+5*CORE+1]*16 + 13];
+return_address=[PTBR+2*((userSP-1)/512)]*512 + (userSP-1)%512;
+[return_address]=return_value;
+
+R1=RELEASE_LOCK;
+R2=KERN_LOCK;
+call ACCESS_CONTROL;
+///////////////////////////////////
+
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE+5*CORE+1]*16 + 9]=0;			//MODE FLAG BIT=0;
+SP=[PROCESS_TABLE + [SYSTEM_STATUS_TABLE+5*CORE+1]*16 + 13];			//SP=UPTR
+
+ireturn;
