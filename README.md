@@ -6,4 +6,4 @@ This repository contains my implementation of Project eXpOS (eXperimental Operat
 
 More details about the project can be found on the website.
 
-This branch contains the dual-core implementation of the OS (Stage 28). The single core implementation can be found in the expos branch.
+This branch contains the dual-core implementation of the OS (Stage 28).
