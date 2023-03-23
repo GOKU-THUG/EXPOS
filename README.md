@@ -1,4 +1,4 @@
-# os_lab
+# OS Lab
 
 Nexpos
 
