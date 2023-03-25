@@ -2,7 +2,7 @@
 
 Nexpos
 
-This repository contains my implementation of Project eXpOS (eXperimental Operating System) done as part of the Operating Systems Laboratory course I took in 2021.
+This repository contains my implementation of Project eXpOS (eXperimental Operating System) done as part of the Operating Systems Laboratory course I took in 2022.
 
 More details about the project can be found on the website.
 
