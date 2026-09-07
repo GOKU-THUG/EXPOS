@@ -4,7 +4,7 @@ NOTE : I have forked this repo from my earlier account(Goku-tech) as I lost my c
 
 Nexpos
 
-This repository contains my implementation of Project eXpOS (eXperimental Operating System) done as part of the Operating Systems Laboratory course I took in 2022.
+This repository contains my implementation of eXpOS (eXperimental Operating System) developed from scratch.
 
 This Experimental Operating System was written in SPL(System Programmer's Language) which is an enriched assembly language programming system for writing protected mode programs for the XSM(Experimental String Machine) machine(simulator for running the OS).
 
